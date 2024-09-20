@@ -116,7 +116,7 @@
         <p>Enter your Prelim grade to calculate the required Midterm and Final grades.</p>
         
         <!-- Input form for grade -->
-        <form id="grade-form">
+        <form id="grade-form" onsubmit="return false;">
             <input type="number" id="prelim" placeholder="Enter Prelim Grade" min="0" max="100">
             <button type="button" id="calculate-btn">Calculate</button>
         </form>
@@ -132,6 +132,10 @@
     </div>
 
     <script>
+        // Prevent form submission when "Enter" is pressed
+        document.getElementById('grade-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
         // JavaScript for Dark/Light Mode Toggle
         const toggleIcon = document.getElementById('theme-icon');
         const body = document.body;
