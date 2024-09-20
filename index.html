@@ -98,6 +98,10 @@
             font-size: 16px;
             letter-spacing: 0.5px;
         }
+
+        #result {
+            display: none; /* Initially hidden */
+        }
     </style>
 </head>
 <body>
@@ -118,49 +122,13 @@
         </form>
 
         <!-- Placeholder for results -->
-        <div id="result"></div>
+        <div id="result">
+            <div>Prelim Grade: <span id="prelimGrade"></span></div>
+            <div>Required Midterm and Final Grades: <span id="midtermGrade"></span></div>
+            <div id="passMessage"></div>
+            <div id="deansMessage"></div>
+        </div>
     </div>
-
-    <!-- PyScript Python Code for Grade Calculation -->
-    <py-script>
-        from pyscript import Element
-
-        # Function to calculate required grades
-        def calculate_grades(prelim_grade):
-            prelim_weight = 0.2
-            midterm_weight = 0.3
-            final_weight = 0.5
-            required_midterm = (75 - (prelim_grade * prelim_weight)) / midterm_weight
-            required_final = (75 - (prelim_grade * prelim_weight)) / final_weight
-            return required_midterm, required_final
-
-        # Function to determine if student can pass
-        def calculate(*args):
-            prelim_value = Element("prelim").element.value
-
-            # Ensure valid input
-            if not prelim_value or not prelim_value.isdigit() or not (0 <= int(prelim_value) <= 100):
-                Element("result").element.innerHTML = "<p style='color:red;'>Please enter a valid number between 0 and 100.</p>"
-                return
-
-            prelim = int(prelim_value)
-            midterm, final = calculate_grades(prelim)
-
-            # Determine if the student has a chance to pass
-            if midterm > 100 or final > 100:
-                result_message = f"With a Prelim grade of {prelim}, it is impossible to pass."
-            else:
-                result_message = f"With a Prelim grade of {prelim}, you need a Midterm grade of {midterm:.2f} and a Final grade of {final:.2f} to pass."
-
-            # Dean's lister check (grade >90)
-            if prelim > 90:
-                result_message += "<br>You qualify for Dean's Lister!"
-
-            Element("result").element.innerHTML = result_message
-
-        # Attach the calculate function to the button
-        Element("calculate-btn").element.onclick = calculate
-    </py-script>
 
     <script>
         // JavaScript for Dark/Light Mode Toggle
@@ -190,6 +158,61 @@
             }
         });
     </script>
+
+    <!-- PyScript Python Code for Grade Calculation -->
+    <py-script>
+        from pyscript import Element
+
+        def calculate_grade(event):
+            try:
+                prelim = float(Element("prelim").element.value)
+            except ValueError:
+                Element("result").element.style.display = "block"
+                Element("result").write("Please enter a valid prelim grade.")
+                return
+
+            passing_grade = 75
+            deans_lister_grade = 90
+            prelim_percent = 0.20
+            midterm_percent = 0.30
+            final_percent = 0.50
+
+            # Validate prelim grade
+            if prelim < 0 or prelim > 100:
+                Element("result").element.style.display = "block"
+                Element("result").write("Please enter a valid prelim grade between 0 and 100.")
+                return
+
+            # Calculate required grades
+            current_total = prelim * prelim_percent
+            required_total = passing_grade - current_total
+
+            if required_total > 0:
+                required_midterm_and_final = required_total / (midterm_percent + final_percent)
+                pass_message = "It is difficult to pass, as the required grades are very high." if required_midterm_and_final > 90 else "You have a chance to pass!"
+            else:
+                required_midterm_and_final = 0
+                pass_message = "Your current grade is high enough to pass!"
+
+            # Calculate for Dean's Lister
+            if prelim >= deans_lister_grade:
+                deans_message = "You qualify for Dean's Lister!"
+            else:
+                required_deans_total = deans_lister_grade - current_total
+                required_deans_midfinal = required_deans_total / (midterm_percent + final_percent)
+                deans_message = f"You cannot be a Dean’s Lister due to insufficient grades. The required grade for you to be a Dean’s Lister is {required_deans_midfinal:.2f} for midterm and {required_deans_midfinal:.2f} for finals."
+
+            # Update result display
+            Element("prelimGrade").element.innerHTML = f"{prelim:.2f}"
+            Element("midtermGrade").element.innerHTML = f"{required_midterm_and_final:.2f}"
+            Element("passMessage").element.innerHTML = pass_message
+            Element("deansMessage").element.innerHTML = deans_message
+
+            # Show result section
+            Element("result").element.style.display = "block"
+
+        Element("calculate-btn").element.onclick = calculate_grade
+    </py-script>
 
 </body>
 </html>
