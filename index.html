@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    
+    <!-- Include PyScript and FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <style>
+        /* General styling for the body */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container for the form and result display */
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: var(--container-bg-color);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        /* Styling for the heading */
+        h1 {
+            text-align: center;
+            font-size: 28px;
+        }
+
+        /* Form styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+        }
+
+        .theme-toggle i {
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+
+        /* Dark/light mode colors */
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #000;
+            --container-bg-color: #fff;
+        }
+
+        .dark-theme {
+            --bg-color: #181818;
+            --text-color: #fff;
+            --container-bg-color: #333;
+        }
+
+        /* Small adjustments to ensure uniqueness and modern look */
+        .container {
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark/Light Mode Toggle Button -->
+    <div class="theme-toggle">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </div>
+
+    <div class="container">
+        <h1>Grade Calculator</h1>
+        <p>Enter your Prelim grade to calculate the required Midterm and Final grades.</p>
+        
+        <!-- Input form for grade -->
+        <form id="grade-form">
+            <input type="number" id="prelim" placeholder="Enter Prelim Grade" min="0" max="100">
+            <button type="button" id="calculate-btn">Calculate</button>
+        </form>
+
+        <!-- Placeholder for results -->
+        <div id="result"></div>
+    </div>
+
+    <!-- PyScript Python Code for Grade Calculation -->
+    <py-script>
+        from pyscript import Element
+
+        # Function to calculate required grades
+        def calculate_grades(prelim_grade):
+            prelim_weight = 0.2
+            midterm_weight = 0.3
+            final_weight = 0.5
+            required_midterm = (75 - (prelim_grade * prelim_weight)) / midterm_weight
+            required_final = (75 - (prelim_grade * prelim_weight)) / final_weight
+            return required_midterm, required_final
+
+        # Function to determine if student can pass
+        def calculate(*args):
+            prelim_value = Element("prelim").element.value
+
+            # Ensure valid input
+            if not prelim_value or not prelim_value.isdigit() or not (0 <= int(prelim_value) <= 100):
+                Element("result").element.innerHTML = "<p style='color:red;'>Please enter a valid number between 0 and 100.</p>"
+                return
+
+            prelim = int(prelim_value)
+            midterm, final = calculate_grades(prelim)
+
+            # Determine if the student has a chance to pass
+            if midterm > 100 or final > 100:
+                result_message = f"With a Prelim grade of {prelim}, it is impossible to pass."
+            else:
+                result_message = f"With a Prelim grade of {prelim}, you need a Midterm grade of {midterm:.2f} and a Final grade of {final:.2f} to pass."
+
+            # Dean's lister check (grade >90)
+            if prelim > 90:
+                result_message += "<br>You qualify for Dean's Lister!"
+
+            Element("result").element.innerHTML = result_message
+
+        # Attach the calculate function to the button
+        Element("calculate-btn").element.onclick = calculate
+    </py-script>
+
+    <script>
+        // JavaScript for Dark/Light Mode Toggle
+        const toggleIcon = document.getElementById('theme-icon');
+        const body = document.body;
+
+        // Check if dark mode is enabled in the localStorage
+        if (localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark-theme');
+            toggleIcon.classList.remove('fa-moon');
+            toggleIcon.classList.add('fa-sun');
+        }
+
+        // Event listener to toggle dark/light mode
+        toggleIcon.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+
+            // Switch icons
+            if (body.classList.contains('dark-theme')) {
+                toggleIcon.classList.remove('fa-moon');
+                toggleIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                toggleIcon.classList.remove('fa-sun');
+                toggleIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+
+</body>
+</html>
