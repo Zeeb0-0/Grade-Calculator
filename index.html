@@ -123,8 +123,9 @@
 
         <!-- Placeholder for results -->
         <div id="result">
-            <div>Prelim Grade: <span id="prelimGrade"></span></div>
-            <div>Required Midterm and Final Grades: <span id="midtermGrade"></span></div>
+            <div id="errorMsg"></div>
+            <div><span id="prelimGrade"></span></div>
+            <div><span id="midtermGrade"></span></div>
             <div id="passMessage"></div>
             <div id="deansMessage"></div>
         </div>
@@ -168,7 +169,11 @@
                 prelim = float(Element("prelim").element.value)
             except ValueError:
                 Element("result").element.style.display = "block"
-                Element("result").write("Please enter a valid prelim grade.")
+                Element("errorMsg").element.innerHTML = f"Please enter a valid prelim grade."
+                Element("prelimGrade").element.innerHTML = f""
+                Element("midtermGrade").element.innerHTML = f""
+                Element("passMessage").element.innerHTML = f""
+                Element("deansMessage").element.innerHTML = f""
                 return
 
             passing_grade = 75
@@ -180,7 +185,11 @@
             # Validate prelim grade
             if prelim < 0 or prelim > 100:
                 Element("result").element.style.display = "block"
-                Element("result").write("Please enter a valid prelim grade between 0 and 100.")
+                Element("errorMsg").element.innerHTML = f"Please enter a valid prelim grade between 0 and 100."
+                Element("prelimGrade").element.innerHTML = f""
+                Element("midtermGrade").element.innerHTML = f""
+                Element("passMessage").element.innerHTML = f""
+                Element("deansMessage").element.innerHTML = f""
                 return
 
             # Calculate required grades
@@ -203,8 +212,9 @@
                 deans_message = f"You cannot be a Dean’s Lister due to insufficient grades. The required grade for you to be a Dean’s Lister is {required_deans_midfinal:.2f} for midterm and {required_deans_midfinal:.2f} for finals."
 
             # Update result display
-            Element("prelimGrade").element.innerHTML = f"{prelim:.2f}"
-            Element("midtermGrade").element.innerHTML = f"{required_midterm_and_final:.2f}"
+            Element("errorMsg").element.innerHTML = f""
+            Element("prelimGrade").element.innerHTML = f"Prelim Grade: {prelim:.2f}"
+            Element("midtermGrade").element.innerHTML = f"Required Midterm and Final Grades: {required_midterm_and_final:.2f}"
             Element("passMessage").element.innerHTML = pass_message
             Element("deansMessage").element.innerHTML = deans_message
 
